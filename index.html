@@ -70,7 +70,7 @@
         }
 
         function setResponse(msg) {
-            responseElement.value = msg;
+            responseElement.textContent = msg;
         }
 
         async function doSubmission() {
@@ -89,7 +89,11 @@
             
             const TARGET_URL = ADD_KEY_URL + `?titleId=${titleId}&key=${keystoneHex}&token=${token}`;
             const response = await fetch(TARGET_URL);
-            setResponse(await response.text());
+            if (response.ok) {
+                setResponse(await response.text());
+            } else {
+                setResponse(await response.statusText);
+            }
         }
     </script>
 </body>

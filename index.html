@@ -40,7 +40,7 @@
                 throw Error('Invalid keystone file');
             }
             if (bufferToHexString(buffer.slice(0, 0x8)) != '6B657973746F6E65') {
-                throw Error('Invalid zeystone file');
+                throw Error('Invalid keystone file');
             }
             if (bufferToHexString(buffer.slice(0x8, 0xB)) != '020001') {
                 throw Error('Invalid keystone file');

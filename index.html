@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <form onsubmit="return false">
+        <label for="titleid">Title Id</label>
+        <input type="text" id="titleid" name="titleid">
+        <br>
+        <label for="keystone">Keystone</label>
+        <input type="file" id="keystone" name="keystone">
+        <br>
+        <label for="token">Token</label>
+        <input type="text" id="token" name="token">
+        <br>
+        <button onclick="doSubmission()">Submit</button>
+    </form>
+    <p id="response"></p>
+    <script>
+        const titleIdElement = document.getElementById("titleid");
+        const keystoneElement = document.getElementById("keystone");
+        const tokenElement = document.getElementById("token");
+        const responseElement = document.getElementById("response");
+        const BASE_URL = 'http://pstools.co.za/';
+        const ADD_KEY_URL = 'http://pstools.co.za/AddKey';
+        async function getKeystoneBuffer() {
+            const arrayBuffer = await keystoneElement.files[0].arrayBuffer();
+            return new Uint8Array(arrayBuffer);
+        }
+        function checkTitleId(titleId) {
+            if (!titleId.match(/^[A-Z]{4}[0-9]{5}$/)) {
+                throw Error('Invalid title id!');
+            }
+        }
+
+        function checkKeystone(buffer) {
+            if (buffer.byteLength != 0x60) {
+                throw Error('Invalid keystone file');
+            }
+            if (bufferToHexString(buffer.slice(0, 0x8)) != '6B657973746F6E65') {
+                throw Error('Invalid zeystone file');
+            }
+            if (bufferToHexString(buffer.slice(0x8, 0xB)) != '020001') {
+                throw Error('Invalid keystone file');
+            }
+            for (let i = 0xB; i < 0x20; i++) {
+                if (buffer[i] != 0) {
+                    throw Error('Invalid keystone file');
+                }
+            }
+        }
+
+
+        function fromNibbleToHex(nibble) {
+            if (nibble > 9) {
+                return String.fromCharCode("A".charCodeAt(0) + nibble - 10);
+            }
+            return nibble.toString();
+        }
+
+        function bufferToHexString(buffer) {
+            let hexString = '';
+            for (const byte of buffer) {
+                hexString += fromNibbleToHex(byte >> 4);
+                hexString += fromNibbleToHex(byte & 15);
+            }
+            return hexString;
+        }
+
+        function setResponse(msg) {
+            responseElement.value = msg;
+        }
+
+        async function doSubmission() {
+            setResponse('');
+            const titleId = titleIdElement.value;
+            const keyBuf = await getKeystoneBuffer();
+            const token = tokenElement.value;
+            try {
+                checkTitleId(titleId);
+                checkKeystone(keyBuf);
+            } catch (e) {
+                setResponse(e.message);
+                return;
+            };
+            const keystoneHex = bufferToHexString(keyBuf.slice(0x20, 0x40));
+            
+            const TARGET_URL = ADD_KEY_URL + `?titleId=${titleId}&key=${keystoneHex}&token=${token}`;
+            const response = await fetch(TARGET_URL);
+            setResponse(await response.text());
+        }
+    </script>
+</body>
+
+</html>

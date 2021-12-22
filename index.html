@@ -23,8 +23,8 @@
         const keystoneElement = document.getElementById("keystone");
         const tokenElement = document.getElementById("token");
         const responseElement = document.getElementById("response");
-        const BASE_URL = 'http://pstools.co.za/';
-        const ADD_KEY_URL = 'http://pstools.co.za/AddKey';
+        const BASE_URL = 'https://pstools.co.za/';
+        const ADD_KEY_URL = 'https://pstools.co.za/AddKey';
         async function getKeystoneBuffer() {
             const arrayBuffer = await keystoneElement.files[0].arrayBuffer();
             return new Uint8Array(arrayBuffer);
